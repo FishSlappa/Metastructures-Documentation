@@ -1,0 +1,141 @@
+MidiOut out;
+MidiMsg msg;
+if( !out.open( 1 ) ) me.exit();
+    
+79 => float BPM;
+60/BPM => float standard_len;
+standard_len*4::second => dur bar;
+standard_len*2::second => dur minim;
+(60/BPM)::second =>  dur crotchet;
+standard_len*0.5::second => dur quaver;
+standard_len*0.25::second => dur semiquaver;
+
+while(true)
+{
+    Math.random2(0,1) => int bool_length;
+    Math.random2(1,5) => int pattern_name;
+    spork ~ patternplayer(bool_length, pattern_name);
+    if (bool_length == 1)
+    {
+        repeat(8)
+        {
+            bar => now;
+        }
+    }
+    else
+    {
+        repeat(16)
+        {
+            bar => now;
+        }
+    }
+}
+
+fun void patternplayer(int bool_length, int pattern_name)
+{
+    if (bool_length == 1)
+    {
+        repeat(8)
+        {
+            if (pattern_name == 1) spork ~ pattern1();
+            else if (pattern_name == 2) spork ~ pattern2();
+            else if (pattern_name == 3) spork ~ pattern3();
+            else if (pattern_name == 4) spork ~ pattern4();
+            else if (pattern_name == 5) spork ~ pattern5();
+            bar => now;
+        }
+    }
+    else
+    {
+        repeat(16)
+        {
+            if (pattern_name == 1) spork ~ pattern1();
+            else if (pattern_name == 2) spork ~ pattern2();
+            else if (pattern_name == 3) spork ~ pattern3();
+            else if (pattern_name == 4) spork ~ pattern4();
+            else if (pattern_name == 5) spork ~ pattern5();
+            bar => now;
+        }
+    }
+}
+
+fun void pattern1()
+{
+    spork ~ trigger("strong");
+    semiquaver*3 => now;
+    spork ~ trigger("weak");
+    semiquaver*5 => now;
+    spork ~ trigger("strong");
+    semiquaver => now;
+    spork ~ trigger("weak");
+    semiquaver => now;
+    spork ~ trigger("weak");
+    semiquaver => now;
+}
+
+fun void pattern2()
+{
+    spork ~ trigger("strong");
+    semiquaver => now;
+    repeat(2)
+    {
+        repeat(3)
+        {
+            spork ~ trigger("weak");
+            semiquaver*0.5 => now;
+        }
+        crotchet => now;
+    }
+}
+
+fun void pattern3()
+{
+    spork ~ trigger("strong");
+    quaver => now;
+    repeat(Math.random2(1,8))
+    {
+        spork ~ trigger("weak");
+        semiquaver*Math.random2(5,10)*0.1 => now;
+    }
+    spork ~ trigger("strong");
+    quaver => now;
+}
+
+fun void pattern4()
+{
+    repeat(8)
+    {
+        spork ~ trigger("strong");
+        semiquaver => now;
+        spork ~ trigger("weak");
+        semiquaver => now;
+    }
+}
+
+fun void pattern5()
+{
+    spork ~ trigger("strong");
+    semiquaver => now;
+    spork ~ trigger("weak");
+    semiquaver*7 => now;
+    spork ~ trigger("strong");
+    semiquaver => now;
+    spork ~ trigger("weak");
+    semiquaver => now;
+    repeat(8)
+    {
+        spork ~ trigger("weak");
+        semiquaver*0.25 => now;
+    }
+}
+
+fun void trigger(string strongweak)
+{
+    144 => msg.data1;
+    36 => msg.data2;
+    if (strongweak == "strong") Math.random2(90,100) => msg.data3;
+    if (strongweak == "weak") Math.random2(50,95) => msg.data3;
+    out.send( msg );
+    semiquaver => now;
+    128 => msg.data1;
+}
